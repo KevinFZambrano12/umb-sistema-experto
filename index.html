@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soporte Técnico UMB - Sistema Experto</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; text-align: center; }
+        .sintoma-group { margin-bottom: 15px; }
+        button { background-color: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; font-size: 16px; }
+        button:hover { background-color: #c0392b; }
+        #resultado { margin-top: 20px; padding: 15px; border-left: 5px solid #2ecc71; background-color: #eaeded; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Diagnóstico de PC (Experto)</h1>
+    <p>Seleccione los síntomas que presenta su equipo:</p>
+    
+    <div class="sintoma-group">
+        <input type="checkbox" id="s1" value="no enciende"> <label for="s1">El equipo no enciende en absoluto</label><br>
+        <input type="checkbox" id="s2" value="sin ruidos"> <label for="s2">No se escucha ningún ruido o ventilador</label><br>
+        <input type="checkbox" id="s3" value="pitidos continuos"> <label for="s3">La placa base emite pitidos continuos</label><br>
+        <input type="checkbox" id="s4" value="enciende"> <label for="s4">El equipo enciende pero falla después</label><br>
+        <input type="checkbox" id="s5" value="pantalla azul"> <label for="s5">Muestra pantalla azul de la muerte (BSOD)</label><br>
+        <input type="checkbox" id="s6" value="lento"> <label for="s6">El sistema operativo está extremadamente lento</label><br>
+        <input type="checkbox" id="s7" value="ruido rasgueo"> <label for="s7">Se escucha un ruido de rasgueo metálico (Click of death)</label>
+    </div>
+
+    <button onclick="consultarExperto()">Consultar al Sistema Experto</button>
+
+    <div id="resultado">
+        <h3>Resultado del Diagnóstico:</h3>
+        <p id="texto-diagnostico"></p>
+        <p><small>Certeza de la regla: <span id="texto-certeza"></span>%</small></p>
+    </div>
+</div>
+
+<script>
+    // ¡REEMPLAZAR CON LA URL DE SU CLOUD FUNCTION DE GCP!
+    const API_URL = 'https://umb-sistema-experto.onrender.com/diagnosticar';
+
+    async function consultarExperto() {
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+        const sintomasSeleccionados = Array.from(checkboxes).map(cb => cb.value);
+
+        if (sintomasSeleccionados.length === 0) {
+            alert("Por favor, seleccione al menos un síntoma.");
+            return;
+        }
+
+        try {
+            const respuesta = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sintomas: sintomasSeleccionados })
+            });
+
+            const datos = await respuesta.json();
+            
+            document.getElementById('texto-diagnostico').innerText = datos.diagnostico;
+            document.getElementById('texto-certeza').innerText = datos.certeza * 100;
+            document.getElementById('resultado').style.display = 'block';
+
+        } catch (error) {
+            console.error('Error de comunicación:', error);
+            alert("Hubo un error al comunicarse con el Sistema Experto en la Nube.");
+        }
+    }
+</script>
+
+</body>
+</html>
